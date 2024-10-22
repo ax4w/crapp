@@ -1,4 +1,4 @@
-package middle
+package bridge
 
 import "time"
 
@@ -18,7 +18,6 @@ type Packet struct {
 	Id   int
 	Data []byte
 }
-
 
 type HRObj struct {
 	T  time.Time

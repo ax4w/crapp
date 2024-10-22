@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"crapp/internal"
-	"crapp/internal/front"
-	"crapp/internal/middle"
+	"crapp/internal/parse"
+	"crapp/internal/ui"
 	"sync"
 )
 
@@ -11,11 +12,13 @@ func main() {
 	r := internal.Scan()
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
-		front.Run()
+	ctx, cancel := context.WithCancel(context.Background())
+	go func(wg *sync.WaitGroup, c context.Context) {
+		parse.Run(c)
 		wg.Done()
-	}(&wg)
-	internal.Run(r)
-	middle.BackToFront <- middle.Packet{Id: middle.CMD_DONE}
+	}(&wg, ctx)
+	ui.Show(r)
+	cancel()
+	println("cancel called")
 	wg.Wait()
 }

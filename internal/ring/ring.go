@@ -1,7 +1,7 @@
 package ring
 
 import (
-	"crapp/internal/middle"
+	"crapp/internal/bridge"
 	"encoding/binary"
 	"fmt"
 	"strconv"
@@ -32,10 +32,9 @@ func New(d bluetooth.Device, a *bluetooth.Adapter) Ring {
 
 func (r Ring) Listen() {
 	chrc := r.getCharacteristic(UART_SERVICE_UUID, UART_TX_CHAR_UUID)
-	println("now listening")
 	chrc.EnableNotifications(func(buf []byte) {
 		id, _ := strconv.Atoi(fmt.Sprintf("%d", buf[0]))
-		middle.BackToFront <- middle.Packet{
+		bridge.RawDataChannel <- bridge.Packet{
 			Id:   id,
 			Data: buf[1:],
 		}
@@ -53,7 +52,7 @@ func (r Ring) SetTime() {
 	data[5] = byte(byteToBcd(n.Second()))
 	data[6] = byte(1)
 
-	time_packet, _ := makePacket(middle.CMD_SET_TIME, data)
+	time_packet, _ := makePacket(bridge.CMD_SET_TIME, data)
 	d, err := r.rxChar.WriteWithoutResponse(time_packet)
 	if err != nil {
 		panic(err.Error())
@@ -89,8 +88,7 @@ func (r Ring) getCharacteristic(service, characteristics string) bluetooth.Devic
 
 func (r Ring) Blink() {
 	println("sending blink")
-	//rxChar := r.getCharacteristic(UART_SERVICE_UUID, UART_RX_CHAR_UUID)
-	blink_twice_paket, _ := makePacket(middle.CMD_BLINK_TWICE, nil)
+	blink_twice_paket, _ := makePacket(bridge.CMD_BLINK_TWICE, nil)
 	n, err := r.rxChar.WriteWithoutResponse(blink_twice_paket)
 	if err != nil {
 		panic(err.Error())
@@ -103,38 +101,37 @@ func (r Ring) Disconnect() {
 }
 
 func (r Ring) Battery() {
-	packet, _ := makePacket(middle.CMD_BATTERY, nil)
+	packet, _ := makePacket(bridge.CMD_BATTERY, nil)
 	r.rxChar.WriteWithoutResponse(packet)
-	println("send battery packet")
 }
 
 func (r Ring) StartHR() {
-	packet, _ := makePacket(middle.CMD_START_HEART_RATE, []byte{0x01, 0x00})
+	packet, _ := makePacket(bridge.CMD_START_HEART_RATE, []byte{0x01, 0x00})
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
 func (r Ring) ContinueHR() {
-	packet, _ := makePacket(middle.CMD_REAL_TIME_HEART_RATE, []byte("3"))
+	packet, _ := makePacket(bridge.CMD_REAL_TIME_HEART_RATE, []byte("3"))
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
 func (r Ring) StopHR() {
-	packet, _ := makePacket(middle.CMD_STOP_HEART_RATE, []byte("\x01\x00\x00"))
+	packet, _ := makePacket(bridge.CMD_STOP_HEART_RATE, []byte("\x01\x00\x00"))
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
 func (r Ring) StartSPO2() {
-	packet, _ := makePacket(middle.CMD_START_HEART_RATE, []byte{0x03, 0x25})
+	packet, _ := makePacket(bridge.CMD_START_HEART_RATE, []byte{0x03, 0x25})
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
 func (r Ring) StopSPO2() {
-	packet, _ := makePacket(middle.CMD_START_HEART_RATE, []byte{0x03, 0x00, 0x00})
+	packet, _ := makePacket(bridge.CMD_START_HEART_RATE, []byte{0x03, 0x00, 0x00})
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
 func (r Ring) HRLogSettings() {
-	packet, _ := makePacket(middle.CMD_HEART_RATE_LOG_SETTINGS, []byte("\x01"))
+	packet, _ := makePacket(bridge.CMD_HEART_RATE_LOG_SETTINGS, []byte("\x01"))
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
@@ -143,7 +140,7 @@ func (r Ring) SetHRLogSettings(enabled bool, interval int) {
 	if enabled {
 		e = 1
 	}
-	packet, _ := makePacket(middle.CMD_HEART_RATE_LOG_SETTINGS, []byte{2, byte(e), byte(interval)})
+	packet, _ := makePacket(bridge.CMD_HEART_RATE_LOG_SETTINGS, []byte{2, byte(e), byte(interval)})
 	r.rxChar.WriteWithoutResponse(packet)
 }
 
@@ -152,6 +149,6 @@ func (r Ring) TodayHRHistory() {
 	midnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
 	data := make([]byte, 4)
 	binary.LittleEndian.PutUint32(data, uint32(midnight))
-	packet, _ := makePacket(middle.CMD_READ_HEART_RATE, data)
+	packet, _ := makePacket(bridge.CMD_READ_HEART_RATE, data)
 	r.rxChar.WriteWithoutResponse(packet)
 }

@@ -1,7 +1,7 @@
 package hrHitory
 
 import (
-	"crapp/internal/middle"
+	middle "crapp/internal/bridge"
 	"time"
 )
 
@@ -55,5 +55,4 @@ func (h *History) Normalize() {
 	if h.IsToday() {
 		h.Heart_rates = h.Heart_rates[:h.minSinceMidnight()]
 	}
-
 }
