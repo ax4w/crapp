@@ -19,6 +19,6 @@ func main() {
 	}(&wg, ctx)
 	ui.Show(r)
 	cancel()
-	println("cancel called")
+	println("cancel called. If the application does not close, you can safely exit with ctrl+c")
 	wg.Wait()
 }
