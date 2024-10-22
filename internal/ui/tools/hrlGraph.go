@@ -33,7 +33,6 @@ func ShowGraph(data []bridge.HRObj) {
 	}
 
 	var pts plotter.XYs
-	//s := data[0].T
 	for i, v := range data {
 		pts = append(pts, plotter.XY{
 			X: float64(v.T.Unix()),

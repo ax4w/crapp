@@ -55,17 +55,14 @@ func handle(hrHis *hrHitory.History, v bridge.Packet) *hrHitory.History {
 			hrHis = hrHitory.New(false, int(v.Data[1]), int(v.Data[2]))
 		} else if sub == 1 {
 			for _, k := range v.Data[5 : len(v.Data)-1] {
-				hrHis.Heart_rates =
-					append(hrHis.Heart_rates, int(k))
+				hrHis.Heart_rates = append(hrHis.Heart_rates, int(k))
 			}
 			offset := 1
 			ts := binary.LittleEndian.Uint32(v.Data[offset : offset+4])
 			hrHis.T = time.Unix(int64(ts), 0)
-			println("time is", hrHis.T.String())
 			for _, v := range v.Data[5:len(v.Data)] {
 				hrHis.Heart_rates = append(hrHis.Heart_rates, int(v))
 			}
-			//hrHis.Index += 9
 		} else {
 			for _, k := range v.Data[1:14] {
 				hrHis.Heart_rates = append(hrHis.Heart_rates, int(k))
@@ -82,7 +79,6 @@ func handle(hrHis *hrHitory.History, v bridge.Packet) *hrHitory.History {
 		println("Packet with ID", v.Id, "is not yet implemented")
 	}
 	return hrHis
-
 }
 
 func Run(ctx context.Context) {

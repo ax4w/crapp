@@ -1,5 +1,9 @@
 package hrHitory
 
+/*
+	The time calculation is somehow off. The Date is correct but the time seems to be off
+*/
+
 import (
 	middle "crapp/internal/bridge"
 	"time"
